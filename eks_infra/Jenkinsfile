@@ -1,10 +1,6 @@
 pipeline {
   agent any
-  environment {
-    AWS_ACCESS_KEY_ID = credentials('aws-access-key')
-    AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
-    AWS_DEFAULT_REGION = 'us-west-1'
-  }
+
   stages {
     stage('Checkout') {
       steps {
@@ -18,7 +14,9 @@ pipeline {
       steps {
         // Initialize Terraform
         dir('eks_infra') {
-          sh 'terraform init -backend-config="bucket=harsha-eks-demo"'
+          withAWS(credentials: 'awsaccess') {
+            sh 'terraform init -backend-config="bucket=harsha-eks-demo"'
+          }
         }
       }
     }
@@ -27,7 +25,9 @@ pipeline {
       steps {
         // Generate Terraform plan
         dir('eks_infra') {
-          sh 'terraform plan'
+          withAWS(credentials: 'awsaccess') {
+            sh 'terraform plan'
+          }
         }
       }
     }
@@ -46,12 +46,16 @@ pipeline {
           if (userInput == 'Apply') {
             // Apply Terraform changes
             dir('eks_infra') {
-              sh 'terraform apply -auto-approve'
+              withAWS(credentials: 'awsaccess') {
+                sh 'terraform apply -auto-approve'
+              }
             }
           } else if (userInput == 'Destroy') {
             // Destroy Terraform infrastructure
             dir('eks_infra') {
-              sh 'terraform destroy -auto-approve'
+              withAWS(credentials: 'awsaccess') {
+                sh 'terraform destroy -auto-approve'
+              }
             }
           } else {
             error "Invalid choice: ${userInput}"
