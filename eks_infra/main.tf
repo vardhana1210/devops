@@ -14,7 +14,21 @@ resource "aws_internet_gateway" "gateway" {
 resource "aws_subnet" "subnet_a" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-west-1b"  # Use an available availability zone
+  availability_zone       = "us-west-1b"
+  map_public_ip_on_launch = true
+}
+
+resource "aws_subnet" "subnet_b" {
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = "us-west-1c"
+  map_public_ip_on_launch = true
+}
+
+resource "aws_subnet" "subnet_c" {
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = "10.0.3.0/24"
+  availability_zone       = "us-west-1a"
   map_public_ip_on_launch = true
 }
 
@@ -30,6 +44,16 @@ resource "aws_route" "internet_gateway_route" {
 
 resource "aws_route_table_association" "subnet_a_association" {
   subnet_id      = aws_subnet.subnet_a.id
+  route_table_id = aws_route_table.route_table.id
+}
+
+resource "aws_route_table_association" "subnet_b_association" {
+  subnet_id      = aws_subnet.subnet_b.id
+  route_table_id = aws_route_table.route_table.id
+}
+
+resource "aws_route_table_association" "subnet_c_association" {
+  subnet_id      = aws_subnet.subnet_c.id
   route_table_id = aws_route_table.route_table.id
 }
 
@@ -65,7 +89,9 @@ resource "aws_eks_cluster" "eks_cluster" {
   role_arn = aws_iam_role.eks_role.arn
   vpc_config {
     subnet_ids = [
-      aws_subnet.subnet_a.id
+      aws_subnet.subnet_a.id,
+      aws_subnet.subnet_b.id,
+      aws_subnet.subnet_c.id
     ]
     security_group_ids = [aws_security_group.security_group.id]
   }
@@ -90,12 +116,19 @@ resource "aws_iam_role" "eks_role" {
 EOF
 }
 
+resource "aws_iam_role_policy_attachment" "eks_cluster_role_attachment" {
+  role       = aws_iam_role.eks_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+}
+
 resource "aws_eks_node_group" "node_group" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
   node_group_name = "ng-default"
   node_role_arn   = aws_iam_role.eks_node_role.arn
   subnet_ids      = [
-    aws_subnet.subnet_a.id
+    aws_subnet.subnet_a.id,
+    aws_subnet.subnet_b.id,
+    aws_subnet.subnet_c.id
   ]
   instance_types = ["m5.xlarge"]
   scaling_config {
