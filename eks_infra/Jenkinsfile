@@ -13,14 +13,18 @@ pipeline {
     stage('Terraform Init') {
       steps {
         // Initialize Terraform
-        sh 'terraform init -backend-config="bucket=harsha-eks-demo"'
+        dir('devops/eks_infra') {
+          sh 'terraform init -backend-config="bucket=harsha-eks-demo"'
+        }
       }
     }
 
     stage('Terraform Plan') {
       steps {
         // Generate Terraform plan
-        sh 'terraform plan'
+        dir('devops/eks_infra') {
+          sh 'terraform plan'
+        }
       }
     }
 
@@ -37,10 +41,14 @@ pipeline {
 
           if (userInput == 'Apply') {
             // Apply Terraform changes
-            sh 'terraform apply -auto-approve'
+            dir('devops/eks_infra') {
+              sh 'terraform apply -auto-approve'
+            }
           } else if (userInput == 'Destroy') {
             // Destroy Terraform infrastructure
-            sh 'terraform destroy -auto-approve'
+            dir('devops/eks_infra') {
+              sh 'terraform destroy -auto-approve'
+            }
           } else {
             error "Invalid choice: ${userInput}"
           }
