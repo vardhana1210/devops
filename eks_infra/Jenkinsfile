@@ -4,16 +4,9 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        sshagent(['sshkey-id']) {
-          checkout([
-            $class: 'GitSCM',
-            branches: [[name: '*/master']],
-            userRemoteConfigs: [[
-              url: 'git@github.com:vardhana1210/devops.git',
-              credentialsId: 'sshkey-id'
-            ]]
-          ])
-        }
+        git branch: '*/master',
+        credentialsId: 'githubhttp',
+        url: 'https://github.com/vardhana1210/devops.git'
       }
     }
 
