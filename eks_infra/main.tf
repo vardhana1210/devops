@@ -87,12 +87,9 @@ resource "aws_security_group" "security_group" {
 resource "aws_eks_cluster" "eks_cluster" {
   name     = "eks-demo"
   role_arn = aws_iam_role.eks_role.arn
+
   vpc_config {
-    subnet_ids = [
-      aws_subnet.subnet_a.id,
-      aws_subnet.subnet_b.id,
-      aws_subnet.subnet_c.id
-    ]
+    subnet_ids         = [aws_subnet.subnet_a.id, aws_subnet.subnet_b.id, aws_subnet.subnet_c.id]
     security_group_ids = [aws_security_group.security_group.id]
   }
 }
@@ -121,23 +118,6 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_role_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
-resource "aws_eks_node_group" "node_group" {
-  cluster_name    = aws_eks_cluster.eks_cluster.name
-  node_group_name = "ng-default"
-  node_role_arn   = aws_iam_role.eks_node_role.arn
-  subnet_ids      = [
-    aws_subnet.subnet_a.id,
-    aws_subnet.subnet_b.id,
-    aws_subnet.subnet_c.id
-  ]
-  instance_types = ["m5.xlarge"]
-  scaling_config {
-    desired_size = 3
-    min_size     = 1
-    max_size     = 10
-  }
-}
-
 resource "aws_iam_role" "eks_node_role" {
   name = "eks_node_role"
 
@@ -156,6 +136,36 @@ resource "aws_iam_role" "eks_node_role" {
   ]
 }
 EOF
+}
+
+resource "aws_iam_role_policy_attachment" "eks_node_group_role_attachment" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "ecr_readonly_policy_attachment" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_eks_node_group" "node_group" {
+  cluster_name    = aws_eks_cluster.eks_cluster.name
+  node_group_name = "ng-default"
+  node_role_arn   = aws_iam_role.eks_node_role.arn
+
+  subnet_ids = [
+    aws_subnet.subnet_a.id,
+    aws_subnet.subnet_b.id,
+    aws_subnet.subnet_c.id
+  ]
+
+  instance_types = ["m5.xlarge"]
+
+  scaling_config {
+    desired_size = 3
+    min_size     = 1
+    max_size     = 10
+  }
 }
 
 resource "kubernetes_namespace" "istio_namespace" {
