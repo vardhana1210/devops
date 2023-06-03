@@ -4,28 +4,54 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        checkout scm
+        sshagent(['sshkey-id']) {
+          checkout([
+            $class: 'GitSCM',
+            branches: [[name: '*/master']],
+            userRemoteConfigs: [[
+              url: 'git@github.com:vardhana1210/devops.git',
+              credentialsId: 'sshkey-id'
+            ]]
+          ])
+        }
       }
     }
 
     stage('Terraform Init') {
       steps {
-        sh 'terraform init'
+        // Initialize Terraform
+        sh 'terraform init -backend-config="bucket=harsha-eks-demo"'
       }
     }
 
     stage('Terraform Plan') {
       steps {
-        sh 'terraform plan -out=tfplan'
+        // Generate Terraform plan
+        sh 'terraform plan'
       }
     }
 
-    stage('Terraform Apply') {
-      when {
-        branch 'master'
-      }
+    stage('Terraform Apply/Destroy') {
       steps {
-        sh 'terraform apply tfplan'
+        // Prompt user for input to choose apply or destroy
+        script {
+          def userInput = input(
+            message: 'Deploy or Destroy the infrastructure?',
+            parameters: [
+              choice(choices: ['Apply', 'Destroy'], description: 'Choose an action')
+            ]
+          )
+
+          if (userInput == 'Apply') {
+            // Apply Terraform changes
+            sh 'terraform apply -auto-approve'
+          } else if (userInput == 'Destroy') {
+            // Destroy Terraform infrastructure
+            sh 'terraform destroy -auto-approve'
+          } else {
+            error "Invalid choice: ${userInput}"
+          }
+        }
       }
     }
   }
