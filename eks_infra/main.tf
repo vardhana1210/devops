@@ -2,21 +2,15 @@ provider "aws" {
   region = "us-west-1"
 }
 
-terraform {
-  backend "s3" {
-    bucket         = "harsha-eks-demo"
-    key            = "terraform.tfstate"
-    region         = "us-west-1"
-  }
-}
-
-// Create VPC
 resource "aws_vpc" "vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 }
 
-// Create subnets across 3 availability zones
+resource "aws_internet_gateway" "gateway" {
+  vpc_id = aws_vpc.vpc.id
+}
+
 resource "aws_subnet" "subnet_a" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.0.1.0/24"
@@ -24,21 +18,6 @@ resource "aws_subnet" "subnet_a" {
   map_public_ip_on_launch = true
 }
 
-resource "aws_subnet" "subnet_b" {
-  vpc_id                  = aws_vpc.vpc.id
-  cidr_block              = "10.0.2.0/24"
-  availability_zone       = "us-west-1b"
-  map_public_ip_on_launch = true
-}
-
-resource "aws_subnet" "subnet_c" {
-  vpc_id                  = aws_vpc.vpc.id
-  cidr_block              = "10.0.3.0/24"
-  availability_zone       = "us-west-1c"
-  map_public_ip_on_launch = true
-}
-
-// Create route table and associate with subnets
 resource "aws_route_table" "route_table" {
   vpc_id = aws_vpc.vpc.id
 }
@@ -54,17 +33,6 @@ resource "aws_route_table_association" "subnet_a_association" {
   route_table_id = aws_route_table.route_table.id
 }
 
-resource "aws_route_table_association" "subnet_b_association" {
-  subnet_id      = aws_subnet.subnet_b.id
-  route_table_id = aws_route_table.route_table.id
-}
-
-resource "aws_route_table_association" "subnet_c_association" {
-  subnet_id      = aws_subnet.subnet_c.id
-  route_table_id = aws_route_table.route_table.id
-}
-
-// Create security group
 resource "aws_security_group" "security_group" {
   name        = "eks_security_group"
   description = "Allow inbound traffic"
@@ -92,21 +60,17 @@ resource "aws_security_group" "security_group" {
   }
 }
 
-// Create EKS cluster
 resource "aws_eks_cluster" "eks_cluster" {
   name     = "eks-demo"
   role_arn = aws_iam_role.eks_role.arn
   vpc_config {
     subnet_ids = [
-      aws_subnet.subnet_a.id,
-      aws_subnet.subnet_b.id,
-      aws_subnet.subnet_c.id
+      aws_subnet.subnet_a.id
     ]
     security_group_ids = [aws_security_group.security_group.id]
   }
 }
 
-// Create IAM role for EKS
 resource "aws_iam_role" "eks_role" {
   name = "eks_role"
 
@@ -126,15 +90,12 @@ resource "aws_iam_role" "eks_role" {
 EOF
 }
 
-// Create EKS node group
 resource "aws_eks_node_group" "node_group" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
   node_group_name = "ng-default"
   node_role_arn   = aws_iam_role.eks_node_role.arn
   subnet_ids      = [
-    aws_subnet.subnet_a.id,
-    aws_subnet.subnet_b.id,
-    aws_subnet.subnet_c.id
+    aws_subnet.subnet_a.id
   ]
   instance_types = ["m5.xlarge"]
   scaling_config {
@@ -164,24 +125,24 @@ resource "aws_iam_role" "eks_node_role" {
 EOF
 }
 
-// Create Kubernetes namespace
-resource "kubernetes_namespace" "namespace" {
-  metadata {
-    name = "harsha"
-  }
-}
 
-// Enable Istio on namespace
+
 resource "kubernetes_namespace" "istio_namespace" {
   metadata {
-    name = "istio-system"
+    name   = "istio-system"
     labels = {
       "istio-injection" = "enabled"
     }
   }
 }
-
-// Deploy Prometheus
+resource "kubernetes_namespace" "namespace" {
+  metadata {
+    name = "harsha"
+    labels = {
+      "istio-injection" = "enabled"
+    }
+  }
+}
 resource "helm_release" "prometheus" {
   name       = "prometheus"
   repository = "https://prometheus-community.github.io/helm-charts"
@@ -189,7 +150,6 @@ resource "helm_release" "prometheus" {
   namespace  = kubernetes_namespace.namespace.metadata[0].name
 }
 
-// Deploy Grafana
 resource "helm_release" "grafana" {
   name       = "grafana"
   repository = "https://grafana.github.io/helm-charts"
@@ -197,7 +157,6 @@ resource "helm_release" "grafana" {
   namespace  = kubernetes_namespace.namespace.metadata[0].name
 }
 
-// Deploy logging tool
 resource "helm_release" "logging_tool" {
   name       = "logging-tool"
   repository = "https://helm.elastic.co"
@@ -205,7 +164,6 @@ resource "helm_release" "logging_tool" {
   namespace  = kubernetes_namespace.namespace.metadata[0].name
 }
 
-// Deploy ALB controller
 resource "helm_release" "alb_controller" {
   name       = "alb-controller"
   repository = "https://aws.github.io/eks-charts"
