@@ -4,7 +4,7 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git branch: '*/master',
+        git branch: 'master',
         credentialsId: 'githubhttp',
         url: 'https://github.com/vardhana1210/devops.git'
       }
