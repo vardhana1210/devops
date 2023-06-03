@@ -1,6 +1,5 @@
 provider "aws" {
   region = "us-west-1"
-  
 }
 
 resource "aws_vpc" "vpc" {
@@ -15,7 +14,7 @@ resource "aws_internet_gateway" "gateway" {
 resource "aws_subnet" "subnet_a" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-west-1a"
+  availability_zone       = "us-west-1b"  # Use an available availability zone
   map_public_ip_on_launch = true
 }
 
@@ -126,8 +125,6 @@ resource "aws_iam_role" "eks_node_role" {
 EOF
 }
 
-
-
 resource "kubernetes_namespace" "istio_namespace" {
   metadata {
     name   = "istio-system"
@@ -136,6 +133,7 @@ resource "kubernetes_namespace" "istio_namespace" {
     }
   }
 }
+
 resource "kubernetes_namespace" "namespace" {
   metadata {
     name = "harsha"
@@ -144,6 +142,7 @@ resource "kubernetes_namespace" "namespace" {
     }
   }
 }
+
 resource "helm_release" "prometheus" {
   name       = "prometheus"
   repository = "https://prometheus-community.github.io/helm-charts"
