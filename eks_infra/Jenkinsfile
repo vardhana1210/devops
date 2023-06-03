@@ -39,7 +39,7 @@ pipeline {
           def userInput = input(
             message: 'Deploy or Destroy the infrastructure?',
             parameters: [
-              choice(choices: ['Apply', 'Destroy'], description: 'Choose an action')
+              choice(choices: ['Apply', 'Destroy'], description: 'Choose an action', name: 'ACTION')
             ]
           )
 
