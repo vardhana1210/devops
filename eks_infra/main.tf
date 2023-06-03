@@ -1,5 +1,8 @@
 provider "aws" {
   region = "us-west-1"
+  assume_role {
+    role_arn = "arn:aws:iam::858903924214:role/terraform-role"
+  }
 }
 
 resource "aws_vpc" "vpc" {
