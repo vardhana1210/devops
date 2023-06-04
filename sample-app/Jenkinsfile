@@ -25,9 +25,11 @@ pipeline {
     // Building Docker images
     stage('Building image') {
       steps{
+        dir('sample-app'){
         script {
           dockerImage = docker.build registry 
           dockerImage.tag("$BUILD_NUMBER")
+        }
         }
       }
     }
@@ -44,6 +46,7 @@ pipeline {
       }
         stage ('Update kubeconfig and Helm Deploy') {
           steps {
+            dir('sample-app'){
             withAWS(region: awsRegion, credentials: 'awsaccess') {
             script {
                 // Update kubeconfig
@@ -51,6 +54,7 @@ pipeline {
                 // deployinh helm chart
                 sh "helm upgrade first-demo --install mychart --namespace demo-app --set image.tag=$BUILD_NUMBER"
                 }
+            }
             }
           }
         }
