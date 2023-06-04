@@ -168,6 +168,24 @@ resource "aws_eks_node_group" "node_group" {
   }
 }
 
+data "aws_eks_cluster_auth" "cluster_auth" {
+  name = aws_eks_cluster.eks_cluster.name
+}
+
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster_auth.cluster_auth[0].cluster_endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster_auth.cluster_auth[0].cluster_certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.cluster_auth[0].token
+  load_config_file       = false
+  version                = "~> 2.3"
+
+  exec {
+    api_version = "client.authentication.k8s.io/v1alpha1"
+    args        = ["eks", "get-token", "--cluster-name", aws_eks_cluster.eks_cluster.name]
+    command     = "aws"
+  }
+}
+
 resource "kubernetes_namespace" "istio_namespace" {
   metadata {
     name   = "istio-system"
@@ -209,8 +227,12 @@ resource "helm_release" "logging_tool" {
 
 resource "helm_release" "alb_controller" {
   name       = "alb-controller"
-  repository = "https://aws.github.io/eks-charts"
-  chart      = "aws-load-balancer-controller"
-  version    = "1.3.2"
+  repository = "https://github.com/kubernetes-sigs/aws-alb-ingress-controller"
+  chart      = "aws-alb-ingress-controller"
   namespace  = kubernetes_namespace.namespace.metadata[0].name
+
+  set {
+    name  = "clusterName"
+    value = aws_eks_cluster.eks_cluster.name
+  }
 }
