@@ -181,10 +181,10 @@ data "aws_eks_cluster_auth" "cluster_auth" {
 }
 
 provider "kubernetes" {
-  host                   = aws_eks_cluster.eks_cluster.endpoint
-  cluster_ca_certificate = base64decode(aws_eks_cluster.eks_cluster.certificate_authority.0.data)
+  host                   = "${aws_eks_cluster.eks_cluster.endpoint}"
+  cluster_ca_certificate = "${base64decode(aws_eks_cluster.eks_cluster.certificate_authority.0.data)}"
   token                  = data.aws_eks_cluster_auth.cluster_auth.token
-  config_path            = abspath(path.module) # Use the absolute path to the module directory
+  version                = "~> 2.3"
 
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
