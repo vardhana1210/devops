@@ -45,8 +45,7 @@ pipeline {
             script {
                 // Update kubeconfig
                 sh "aws eks update-kubeconfig --name demo --region ${awsRegion}"
-                // Verify the kubeconfig was successfully updated
-                sh "kubectl config use-context demo"
+                // deployinh helm chart
                 sh "helm upgrade first --install .sample-app/mychart --namespace demo-app --set image.tag=$BUILD_NUMBER"
                 }
             }
