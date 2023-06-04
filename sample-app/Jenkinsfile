@@ -30,9 +30,9 @@ pipeline {
     // Uploading Docker images into AWS ECR
     stage('Pushing to ECR') {
      steps{  
-        withCredentials([string(credentialsId: 'awsaccess', variable: 'awsCredentials')]){
+        withAWS(region: 'us-east-1', credentials: 'awsaccess') {
          script {
-                sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 858903924214.dkr.ecr.us-east-1.amazonaws.com'
+                sh 'aws ecr get-login-password --region ${env.awsRegion} | docker login --username AWS --password-stdin ${env.registry}'
                 sh 'docker push 858903924214.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app:$BUILD_NUMBER'
          }
         }
