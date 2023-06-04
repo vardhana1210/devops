@@ -95,7 +95,7 @@ resource "aws_security_group" "security_group" {
 resource "aws_eks_cluster" "eks_cluster" {
   name     = "eks-demo"
   role_arn = aws_iam_role.eks_role.arn
-  version  = "1.24"
+  
   
  
   vpc_config {
