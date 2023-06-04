@@ -13,7 +13,7 @@ pipeline {
     stage('Terraform Init') {
       steps {
         // Initialize Terraform
-        dir('eks_infra') {
+        dir('eks_infra/terraform') {
           withAWS(credentials: 'awsaccess') {
             sh 'terraform init -backend-config="bucket=harsha-eks-demo"'
           }
@@ -24,7 +24,7 @@ pipeline {
     stage('Terraform Plan') {
       steps {
         // Generate Terraform plan
-        dir('eks_infra') {
+        dir('eks_infra/terraform') {
           withAWS(credentials: 'awsaccess') {
             sh 'terraform plan'
           }
@@ -45,14 +45,14 @@ pipeline {
 
           if (userInput == 'Apply') {
             // Apply Terraform changes
-            dir('eks_infra') {
+            dir('eks_infra/terraform') {
               withAWS(credentials: 'awsaccess') {
                 sh 'terraform apply -auto-approve'
               }
             }
           } else if (userInput == 'Destroy') {
             // Destroy Terraform infrastructure
-            dir('eks_infra') {
+            dir('eks_infra/terraform') {
               withAWS(credentials: 'awsaccess') {
                 sh 'terraform destroy -auto-approve'
               }
