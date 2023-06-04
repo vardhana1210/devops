@@ -181,9 +181,9 @@ data "aws_eks_cluster_auth" "cluster_auth" {
 }
 
 provider "kubernetes" {
-  host                   = data.aws_eks_cluster_auth.cluster_auth.cluster_endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster_auth.cluster_auth.cluster_certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.cluster_auth.token
+  host                   = data.aws_eks_cluster_auth.cluster_auth[0].cluster_endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster_auth.cluster_auth[0].cluster_certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.cluster_auth[0].token
   load_config_file       = false
   version                = "~> 2.3"
 
@@ -193,6 +193,7 @@ provider "kubernetes" {
     command     = "aws"
   }
 }
+
 
 
 resource "kubernetes_namespace" "istio_namespace" {
@@ -217,28 +218,28 @@ resource "helm_release" "prometheus" {
   name       = "prometheus"
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "prometheus"
-  namespace  = kubernetes_namespace.namespace.metadata[0].name
+  namespace  = harsha
 }
 
 resource "helm_release" "grafana" {
   name       = "grafana"
   repository = "https://grafana.github.io/helm-charts"
   chart      = "grafana"
-  namespace  = kubernetes_namespace.namespace.metadata[0].name
+  namespace  = harsha
 }
 
 resource "helm_release" "logging_tool" {
   name       = "logging-tool"
   repository = "https://helm.elastic.co"
   chart      = "elasticsearch"
-  namespace  = kubernetes_namespace.namespace.metadata[0].name
+  namespace  = harsha
 }
 
 resource "helm_release" "alb_controller" {
   name       = "alb-controller"
   repository = "https://github.com/kubernetes-sigs/aws-alb-ingress-controller"
   chart      = "aws-alb-ingress-controller"
-  namespace  = kubernetes_namespace.namespace.metadata[0].name
+  namespace  = kube-system
 
   set {
     name  = "clusterName"
