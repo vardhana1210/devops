@@ -30,16 +30,18 @@ pipeline {
     // Uploading Docker images into AWS ECR
     stage('Pushing to ECR') {
      steps{  
+        withCredentials([string(credentialsId: 'awsaccess', variable: 'awsCredentials')]){
          script {
                 sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 858903924214.dkr.ecr.us-east-1.amazonaws.com'
                 sh 'docker push 858903924214.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app:$BUILD_NUMBER'
          }
         }
+     }
       }
         stage ('Helm Deploy') {
           steps {
             script {
-                sh "helm upgrade first --install mychart --namespace demo-app --set image.tag=$BUILD_NUMBER"
+                sh "helm upgrade first --install .sample-app/mychart --namespace demo-app --set image.tag=$BUILD_NUMBER"
                 }
             }
         }
