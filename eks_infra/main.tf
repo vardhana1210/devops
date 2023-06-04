@@ -1,13 +1,13 @@
 terraform {
   backend "s3" {
     bucket = "harsha-eks-demo"
-    key    = "terraform.tfstate"
+    key    = "terraform-west-2.tfstate"
     region = "us-west-1"
   }
 }
 
 provider "aws" {
-  region = "us-west-1"
+  region = "us-west-2"
 }
 
 resource "aws_vpc" "vpc" {
@@ -22,21 +22,21 @@ resource "aws_internet_gateway" "gateway" {
 resource "aws_subnet" "subnet_a" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-west-1b"
+  availability_zone       = "us-west-2a"
   map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "subnet_b" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.0.2.0/24"
-  availability_zone       = "us-west-1c"
+  availability_zone       = "us-west-2b"
   map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "subnet_c" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.0.3.0/24"
-  availability_zone       = "us-west-1b"
+  availability_zone       = "us-west-2c"
   map_public_ip_on_launch = true
 }
 
@@ -181,66 +181,3 @@ data "aws_eks_cluster_auth" "cluster_auth" {
   name = aws_eks_cluster.eks_cluster.name
 }
 
-provider "kubernetes" {
-  host                   = "${aws_eks_cluster.eks_cluster.endpoint}"
-  cluster_ca_certificate = "${base64decode(aws_eks_cluster.eks_cluster.certificate_authority.0.data)}"
-  token                  = data.aws_eks_cluster_auth.cluster_auth.token
-  version                = "~> 2.3"
-
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    args        = ["eks", "get-token", "--cluster-name", aws_eks_cluster.eks_cluster.name]
-    command     = "aws"
-  }
-}
-
-resource "kubernetes_namespace" "istio_namespace" {
-  metadata {
-    name   = "istio-system"
-    labels = {
-      "istio-injection" = "enabled"
-    }
-  }
-}
-
-resource "kubernetes_namespace" "namespace" {
-  metadata {
-    name = "harsha"
-    labels = {
-      "istio-injection" = "enabled"
-    }
-  }
-}
-
-resource "helm_release" "prometheus" {
-  name       = "prometheus"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "prometheus"
-  namespace  = "harsha"
-}
-
-resource "helm_release" "grafana" {
-  name       = "grafana"
-  repository = "https://grafana.github.io/helm-charts"
-  chart      = "grafana"
-  namespace  = "harsha"
-}
-
-resource "helm_release" "logging_tool" {
-  name       = "logging-tool"
-  repository = "https://helm.elastic.co"
-  chart      = "elasticsearch"
-  namespace  = "harsha"
-}
-
-resource "helm_release" "alb_controller" {
-  name       = "alb-controller"
-  repository = "https://github.com/kubernetes-sigs/aws-alb-ingress-controller"
-  chart      = "aws-alb-ingress-controller"
-  namespace  = "kube-system"
-
-  set {
-    name  = "clusterName"
-    value = aws_eks_cluster.eks_cluster.name
-  }
-}
