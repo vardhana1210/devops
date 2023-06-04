@@ -1,3 +1,11 @@
+
+terraform {
+  backend "s3" {
+    bucket = "harsha-eks-demo"
+    key    = "terraform.tfstate"
+    region = "us-west-1"
+  }
+}
 provider "aws" {
   region = "us-west-1"
 }
