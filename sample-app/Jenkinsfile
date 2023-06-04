@@ -17,8 +17,10 @@ pipeline {
         }
       stage ('Build') {
           steps {
+            dir('sample-app'){
             sh 'mvn clean install'           
             }
+          }
       }
     // Building Docker images
     stage('Building image') {
