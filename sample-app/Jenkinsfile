@@ -5,6 +5,7 @@ pipeline {
     agent any
     environment {
         registry = "858903924214.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app"
+        awsRegion = "us-east-1"
     }
    
     stages {
@@ -32,8 +33,8 @@ pipeline {
      steps{  
         withAWS(region: 'us-east-1', credentials: 'awsaccess') {
          script {
-                sh 'aws ecr get-login-password --region ${env.awsRegion} | docker login --username AWS --password-stdin ${env.registry}'
-                sh 'docker push 858903924214.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app:$BUILD_NUMBER'
+                sh """aws ecr get-login-password --region ${awsRegion} | docker login --username AWS --password-stdin ${registry}
+                        docker push ${registry}:$BUILD_NUMBER"""
          }
         }
      }
