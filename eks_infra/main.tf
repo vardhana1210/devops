@@ -215,28 +215,28 @@ resource "helm_release" "prometheus" {
   name       = "prometheus"
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "prometheus"
-  namespace  = harsha
+  namespace  = "harsha"
 }
 
 resource "helm_release" "grafana" {
   name       = "grafana"
   repository = "https://grafana.github.io/helm-charts"
   chart      = "grafana"
-  namespace  = harsha
+  namespace  = "harsha"
 }
 
 resource "helm_release" "logging_tool" {
   name       = "logging-tool"
   repository = "https://helm.elastic.co"
   chart      = "elasticsearch"
-  namespace  = harsha
+  namespace  = "harsha"
 }
 
 resource "helm_release" "alb_controller" {
   name       = "alb-controller"
   repository = "https://github.com/kubernetes-sigs/aws-alb-ingress-controller"
   chart      = "aws-alb-ingress-controller"
-  namespace  = kube-system
+  namespace  = "kube-system"
 
   set {
     name  = "clusterName"
