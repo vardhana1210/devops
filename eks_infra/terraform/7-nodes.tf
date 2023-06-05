@@ -91,7 +91,7 @@ resource "helm_release" "loki" {
 resource "helm_release" "istio" {
   name       = "istio"
   repository = "https://charts.helm.sh/stable"
-  chart      = "istio-base"
+  chart      = "istio"
   version    = "1.12.0"
 
   set {
