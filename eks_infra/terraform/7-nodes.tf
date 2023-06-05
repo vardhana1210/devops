@@ -88,5 +88,86 @@ resource "helm_release" "loki" {
   }
 }
 
+resource "helm_release" "istio" {
+  name       = "istio"
+  repository = "https://charts.helm.sh/stable"
+  chart      = "istio-base"
+  version    = "1.12.0"
+
+  set {
+    name  = "global.hub"
+    value = "docker.io/istio"
+  }
+  set {
+    name  = "global.tag"
+    value = "1.12.0"
+  }
+  set {
+    name  = "gateways.istio-ingressgateway.type"
+    value = "LoadBalancer"
+  }
+
+  namespace = "istio-system"
+}
+
+resource "helm_release" "kiali" {
+  name       = "kiali"
+  repository = "https://kiali.org/helm-charts"
+  chart      = "kiali-server"
+  version    = "1.41.0"
+
+  set {
+    name  = "image.tag"
+    value = "v1.41"
+  }
+
+  namespace = "istio-system"
+
+  depends_on = [helm_release.istio]
+}
+
+resource "helm_release" "jaeger" {
+  name       = "jaeger"
+  repository = "https://jaegertracing.github.io/helm-charts"
+  chart      = "jaeger-operator"
+  version    = "3.2.2"
+
+  namespace = "istio-system"
+
+  depends_on = [helm_release.istio]
+}
+
+resource "helm_release" "istio-gateway" {
+  name       = "istio-gateway"
+  repository = "https://charts.helm.sh/stable"
+  chart      = "istio-ingress"
+  version    = "1.12.0"
+
+  set {
+    name  = "global.hub"
+    value = "docker.io/istio"
+  }
+  set {
+    name  = "global.tag"
+    value = "1.12.0"
+  }
+
+  namespace = "istio-system"
+
+  depends_on = [helm_release.istio]
+}
+
+resource "helm_release" "vpa" {
+  name       = "vpa"
+  repository = "https://vertical-pod-autoscaler.github.io/charts"
+  chart      = "vertical-pod-autoscaler"
+  version    = "0.9.1"
+
+  namespace = "kube-system"
+
+  depends_on = [helm_release.istio]
+}
+
+
 
 
