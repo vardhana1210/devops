@@ -59,6 +59,9 @@ resource "aws_eks_node_group" "private-nodes" {
 data "aws_eks_cluster_auth" "cluster" {
   name = aws_eks_cluster.demo.name
 }
+data "aws_eks_cluster" "cluster" {
+  name = "demo"  # Replace with your EKS cluster name
+}
 provider "helm" {
   kubernetes {
     host                   = data.aws_eks_cluster.cluster.endpoint
