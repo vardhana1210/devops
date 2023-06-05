@@ -63,10 +63,10 @@ data "aws_eks_cluster_auth" "cluster" {
 
 resource "helm_release" "loki" {
   name       = "loki"
-  repository = "https://grafana.github.io/loki/charts"
+  repository = "https://grafana.github.io/helm-charts"
   chart      = "loki-stack"
-  version    = "2.5.2"
-  namespace  = "logging"
+  version    = "2.9.10"
+  namespace  = "demo-app"
 
   depends_on = [data.aws_eks_cluster_auth.cluster]
   set {
