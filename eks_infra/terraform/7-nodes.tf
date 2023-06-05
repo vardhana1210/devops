@@ -58,7 +58,6 @@ resource "aws_eks_node_group" "private-nodes" {
 }
 data "aws_eks_cluster_auth" "cluster" {
   name = aws_eks_cluster.demo.name
-  kubeconfig_aws_authenticator_additional_args = ["--region", var.region]
 }
 
 resource "helm_release" "loki" {
