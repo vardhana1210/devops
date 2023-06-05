@@ -73,18 +73,13 @@ provider "helm" {
     }
   }
 }
-resource "kubernetes_namespace" "harsha_namespace" {
-  metadata {
-    name = "logging"
-  }
-}
 
 resource "helm_release" "loki" {
   name       = "loki"
   repository = "https://grafana.github.io/helm-charts"
   chart      = "loki-stack"
   version    = "2.9.10"
-  namespace  = "logging"
+  namespace  = "demo-app"
 
   depends_on = [data.aws_eks_cluster_auth.cluster]
   set {
