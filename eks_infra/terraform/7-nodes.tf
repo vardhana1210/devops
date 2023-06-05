@@ -59,13 +59,18 @@ resource "aws_eks_node_group" "private-nodes" {
 data "aws_eks_cluster_auth" "cluster" {
   name = aws_eks_cluster.demo.name
 }
+resource "kubernetes_namespace" "harsha_namespace" {
+  metadata {
+    name = "logging"
+  }
+}
 
 resource "helm_release" "loki" {
   name       = "loki"
   repository = "https://grafana.github.io/helm-charts"
   chart      = "loki-stack"
   version    = "2.9.10"
-  namespace  = "demo-app"
+  namespace  = "logging"
 
   depends_on = [data.aws_eks_cluster_auth.cluster]
   set {
@@ -74,9 +79,5 @@ resource "helm_release" "loki" {
   }
 }
 
-resource "kubernetes_namespace" "harsha_namespace" {
-  metadata {
-    name = "harsha-app"
-  }
-}
+
 
