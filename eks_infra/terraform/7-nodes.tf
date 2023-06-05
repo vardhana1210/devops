@@ -56,4 +56,28 @@ resource "aws_eks_node_group" "private-nodes" {
     aws_iam_role_policy_attachment.nodes-AmazonEC2ContainerRegistryReadOnly,
   ]
 }
+data "aws_eks_cluster_auth" "cluster" {
+  name = aws_eks_cluster.demo.name
+  kubeconfig_aws_authenticator_additional_args = ["--region", var.region]
+}
+
+resource "helm_release" "loki" {
+  name       = "loki"
+  repository = "https://grafana.github.io/loki/charts"
+  chart      = "loki-stack"
+  version    = "2.5.2"
+  namespace  = "logging"
+
+  depends_on = [data.aws_eks_cluster_auth.cluster]
+  set {
+    name  = "service.type"
+    value = "LoadBalancer"
+  }
+}
+
+resource "kubernetes_namespace" "harsha_namespace" {
+  metadata {
+    name = "harsha-app"
+  }
+}
 
