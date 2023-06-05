@@ -12,9 +12,9 @@ terraform {
     
   }
   backend "s3" {
-    bucket = "harsha-eks-demo"
+    bucket = "harsha-eks-demo-app"
     key    = "terraform-demo.tfstate"
-    region = "us-west-1"
+    region = "us-east-1"
   }
 
 }

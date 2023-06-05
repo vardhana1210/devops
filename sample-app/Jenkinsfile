@@ -4,7 +4,7 @@ pipeline {
     }
     agent any
     environment {
-        registry = "858903924214.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app"
+        registry = "373605276147.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app"
         awsRegion = "us-east-1"
     }
    
