@@ -15,7 +15,7 @@ pipeline {
         // Initialize Terraform
         dir('eks_infra/terraform') {
           withAWS(credentials: 'awsaccess') {
-            sh 'terraform init -backend-config="bucket=harsha-eks-demo"'
+            sh 'terraform init -backend-config="bucket=harsha-eks-demo-app"'
           }
         }
       }
