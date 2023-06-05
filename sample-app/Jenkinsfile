@@ -52,7 +52,7 @@ pipeline {
                 // Update kubeconfig
                 sh "aws eks update-kubeconfig --name demo --region ${awsRegion}"
                 // deployinh helm chart
-                sh "helm upgrade first-demo --install mychart --namespace demo-app --set image.tag=$BUILD_NUMBER"
+                sh "helm upgrade first-demo --install mychart --namespace demo-app --set image.tag=$BUILD_NUMBER --set hpa.version=v1" 
                 }
             }
             }
