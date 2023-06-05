@@ -88,16 +88,6 @@ resource "helm_release" "loki" {
   }
 }
 
- 
-resource "helm_release" "vpa" {
-  name       = "vpa"
-  repository = "https://vertical-pod-autoscaler.github.io/charts"
-  chart      = "vertical-pod-autoscaler"
-  version    = "0.9.1"
-
-  namespace = "kube-system"
-}
-
 
 
 
